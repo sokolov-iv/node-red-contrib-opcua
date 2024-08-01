@@ -96,7 +96,7 @@
         let savedAddressSpace = "";
 
         if (node.users && node.users.length > 0) {
-            verbose_log("Trying to load default users from file: " + node.users + " (current folder: " + __dirname + ")");
+            verbose_log(`Trying to load users from file: " + ${node.users}`);
             if (fs.existsSync(node.users)) {
                 users = JSON.parse(fs.readFileSync(node.users));
                 verbose_log("Loaded users: " + JSON.stringify(users));
@@ -252,7 +252,7 @@
             initialized = false;
             verbose_log("Create Server from XML...");
             // DO NOT USE "%FQDN%" anymore, hostname is OK
-            const applicationUri =  opcua.makeApplicationUrn(os.hostname(), "node-red-contrib-opcua-server");
+            const applicationUri =  opcua.makeApplicationUrn(os.hostname(), node.name);
             verbose_log("ApplicationUrn: " + applicationUri);
             verbose_log("Server certificate manager");
             const serverCertificateManager = createServerCertificateManager();
@@ -281,7 +281,7 @@
                 nodeset_filename: xmlFiles,
                 serverInfo: {
                   applicationUri,
-                  productUri: "Node-RED NodeOPCUA-Server",
+                  productUri: node.name,
                   // applicationName: { text: "Mini NodeOPCUA Server", locale: "en" }, // Set later
                   gatewayServerUri: null,
                   discoveryProfileUri: null,
@@ -317,7 +317,7 @@
                 registerServerMethod: registerMethod
             };
             node.server_options.serverInfo = {
-                applicationName: { text: "Node-RED OPCUA" }
+                applicationName: { text: node.name }
             };
             
             node.server_options.buildInfo = {
