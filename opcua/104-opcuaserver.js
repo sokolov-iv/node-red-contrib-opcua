@@ -610,7 +610,7 @@
             else {
                 if (msg.payload.hasOwnProperty('opcuaCommand') && msg.payload.opcuaCommand === "addVariable") {
                     // msg.topic with nodeId and datatype
-                    if (msg.topic.indexOf("ns=")>=0 && msg.topic.indexOf("datatype=")>0) {
+                    if (msg.topic.indexOf("ns=")>=0 && msg.payload.hasOwnProperty("datatype")) {
                         return true;
                     }
                     else {
@@ -881,39 +881,27 @@
                     var displayName = "";
                     var browseNameTopic = "";
                     var opcuaDataType = null;
-                    var e = msg.topic.indexOf("datatype=");
-                    if (e<0) {
+                    if (!msg.payload.hasOwnProperty("datatype")) {
                         node_error("no datatype=Float or other type in addVariable ".concat(msg.topic)); // Example topic format ns=4;s=FolderName
                     }
                     var parentFolder = node.server.engine.addressSpace.rootFolder.objects;
                     if (folder != null) {
                         parentFolder = folder; // Use previous folder as parent or setFolder() can be use to set parent
                     }
-                    var d = msg.topic.indexOf("description=");
-                    if (d > 0) {
-                        description = msg.topic.substring(d + 12);
-                        if (description.indexOf(";") >= 0) {
-                            description = description.substring(0, description.indexOf(";"));
-                        }
+                    if (msg.payload.hasOwnProperty("description")) {
+                        description = msg.payload.description
                     }
-                    var d = msg.topic.indexOf("browseName=");
-                    if (d > 0) {
-                        browseNameTopic = msg.topic.substring(d + 11);
-                        if (browseNameTopic.indexOf(";") >= 0) {
-                            browseNameTopic = browseNameTopic.substring(0, browseNameTopic.indexOf(";"));
-                        }
+					if (msg.payload.hasOwnProperty("browseName")) {
+                        browseNameTopic = msg.payload.browseName
                     }
-                    const dn = msg.topic.indexOf("displayName=");
-                    if (dn > 0) {
-                      displayName = msg.topic.substring(dn + 12);
-                      // console.log(displayName);
-                      if (displayName.indexOf(";") >= 0) {
-                        displayName = displayName.substring(0, displayName.indexOf(";"));
-                      }
+					if (msg.payload.hasOwnProperty("displayName")) {
+                        displayName = msg.payload.displayName
                     }
-                    if (e > 0) {
-                        name = msg.topic.substring(0, e - 1);
-                        datatype = msg.topic.substring(e + 9);
+
+                    if (msg.payload.hasOwnProperty("datatype")) {
+                        name = msg.topic;
+                        datatype = msg.payload.datatype;
+						verbose_log(`datatype = ${datatype}`)
                         // ExtentionObject contains extra info like typeId
                         if (datatype.indexOf(";") >= 0) {
                             datatype = datatype.substring(0, datatype.indexOf(";"));
@@ -1066,9 +1054,9 @@
                         verbose_log("Datatype: " + datatype);
                         verbose_log("OPC UA type id: "+ opcuaDataType.toString() + " dims[" + dim1 + "," + dim2 +"," + dim3 +"] == " + dimensions);
                         // Initial value for server variable
-                        var init = msg.topic.indexOf("value=");
-                        if (init > 0) {
-                            var initialValue = msg.topic.substring(init+6);
+
+                        if (msg.payload.hasOwnProperty("initValue")) {
+                            var initialValue = msg.payload.initValue;
                             verbose_log("BrowseName: " + ns + ":" + browseName + " initial value: " + initialValue);
                             variables[variableId] = opcuaBasics.build_new_value_by_datatype(datatype, initialValue);
                         }
@@ -1098,13 +1086,13 @@
                             return opcua.StatusCodes.Good;
                         }
                         // Check & add from msg accessLevel userAccessLevel, role & permissions
-                        var accessLevel = opcua.makeAccessLevelFlag("CurrentRead | CurrentWrite"); // Use as default
-                        var userAccessLevel = opcua.makeAccessLevelFlag("CurrentRead | CurrentWrite"); // Use as default
-                        if (msg.accessLevel) {
-                            accessLevel = msg.accessLevel;
+                        var accessLevel = opcua.makeAccessLevelFlag("CurrentRead"); // Use as default or "CurrentRead | CurrentWrite"
+                        var userAccessLevel = opcua.makeAccessLevelFlag("CurrentRead"); // Use as default or "CurrentRead | CurrentWrite"
+						if (msg.payload.accessLevel) {
+                            accessLevel = msg.payload.accessLevel;
                         }
-                        if (msg.userAccessLevel) {
-                            userAccessLevel = msg.userAccessLevel;
+                        if (msg.payload.userAccessLevel) {
+                            userAccessLevel = msg.payload.userAccessLevel;
                         }    
                         // permissions collected from multiple opcua-rights
                         let permissions = [
