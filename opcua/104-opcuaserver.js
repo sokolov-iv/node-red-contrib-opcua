@@ -782,22 +782,12 @@
                 case "addFolder":
                     var nodeId = msg.topic;
                     var description = "";
-                    var d = msg.topic.indexOf("description=");
-                    if (d > 0) {
-                        nodeId = nodeId.substring(0, d - 1); // format is msg.topic="ns=1;s=TEST;description=MyTestFolder"
-                        description = msg.topic.substring(d + 12);
-                        if (description.indexOf(";") >= 0) {
-                            description = description.substring(0, description.indexOf(";"));
-                        }
+                    if (msg.payload.hasOwnProperty("description")) {
+                        description = msg.payload.description;
                     }
                     var browseName = "";
-                    var d = msg.topic.indexOf("browseName=");
-                    if (d > 0) {
-                        nodeId = nodeId.substring(0, d - 1); // format is msg.topic="ns=1;s=Main.Test;browseName=Test"
-                        browseName = msg.topic.substring(d + 11);
-                        if (browseName.indexOf(";") >= 0) {
-                            browseName = browseName.substring(0, browseName.indexOf(";"));
-                        }
+                    if (msg.payload.hasOwnProperty("browseName")) {
+						browseName = msg.payload.browseName;
                     }                    
                     verbose_log("Adding Folder: ".concat(nodeId)); // Example topic format ns=4;s=FolderName
                     var parentFolder = node.server.engine.addressSpace.rootFolder.objects;
@@ -805,13 +795,13 @@
                         parentFolder = folder; // Use previously created folder as parentFolder or setFolder() can be used to set parentFolder
                     }
                     // Check & add from msg accessLevel userAccessLevel, role & permissions
-                    var accessLevel = opcua.makeAccessLevelFlag("CurrentRead|CurrentWrite"); // Use as default
-                    var userAccessLevel = opcua.makeAccessLevelFlag("CurrentRead|CurrentWrite"); // Use as default
-                    if (msg.accessLevel) {
-                        accessLevel = msg.accessLevel;
+                    var accessLevel = opcua.makeAccessLevelFlag("CurrentRead"); // Use as default or CurrentRead|CurrentWrite
+                    var userAccessLevel = opcua.makeAccessLevelFlag("CurrentRead"); // Use as default or CurrentRead|CurrentWrite
+                    if (msg.payload.accessLevel) {
+                        accessLevel = msg.payload.userAccessLevel;
                     }
-                    if (msg.userAccessLevel) {
-                        userAccessLevel = msg.userAccessLevel;
+                    if (msg.payload.userAccessLevel) {
+                        userAccessLevel = msg.payload.userAccessLevel;
                     }
                     // permissions collected from multiple opcua-rights
                     let permissions = [
@@ -892,11 +882,12 @@
                         description = msg.payload.description
                     }
 					if (msg.payload.hasOwnProperty("browseName")) {
-                        browseNameTopic = msg.payload.browseName
+                        browseNameTopic = msg.payload.browseName;
+						displayName = msg.payload.browseName
                     }
-					if (msg.payload.hasOwnProperty("displayName")) {
-                        displayName = msg.payload.displayName
-                    }
+					// if (msg.payload.hasOwnProperty("displayName")) {
+                    //     displayName = msg.payload.displayName
+                    // }
 
                     if (msg.payload.hasOwnProperty("datatype")) {
                         name = msg.topic;
