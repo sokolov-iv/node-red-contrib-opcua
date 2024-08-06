@@ -29,10 +29,10 @@ limitations under the License.
             autoAcceptUnknownCertificate: {value: true},
             registerToDiscovery: {value: false},
             constructDefaultAddressSpace: {value: true},
-            allowAnonymous: {value: true, required: true},
+            allowAnonymous: {value: false, required: true},
             endpointNone: {value: true},
-            endpointSign: {value: true},
-            endpointSignEncrypt: {value: true},
+            endpointSign: {value: false},
+            endpointSignEncrypt: {value: false},
             endpointBasic128Rsa15: {value: true},
             endpointBasic256: {value: true},
             endpointBasic256Sha256: {value: true},
@@ -80,10 +80,10 @@ limitations under the License.
         <label for="node-input-endpoint"><i class="icon-tasks"></i> ResourcePath</label>
         <input type="text" id="node-input-endpoint" placeholder="UA/SimpleNodeRedServer">
     </div>
-    <div class="form-row">
+    <!-- <div class="form-row">
         <label for="node-input-users"><i class="icon-tasks"></i> Users file</label>
         <input type="text" id="node-input-users" placeholder="users.json">
-    </div>
+    </div> -->
     <div class="form-row">
         <label for="node-input-nodesetDir"><i class="icon-tasks"></i> Custom nodeset directory</label>
         <input type="text" id="node-input-nodesetDir" placeholder="">
