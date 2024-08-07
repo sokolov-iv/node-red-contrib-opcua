@@ -112,6 +112,8 @@ module.exports = function (RED) {
 		// Server endpoints active configuration
 		var policies = [];
 		var modes = [];
+		let host;
+		let port;
 
 		// Security modes None | Sign | SignAndEncrypt
 		if (this.endpointNone === true) {
@@ -274,7 +276,8 @@ module.exports = function (RED) {
 				securityPolicies: policies,
 				securityModes: modes,
 				allowAnonymous: n.allowAnonymous,
-				port: parseInt(n.port),
+				port: port,
+				host: host,
 				resourcePath: "/" + node.endpoint, // Option was missing / can be 
 				// maxAllowedSessionNumber: 1000,
 				maxConnectionsPerEndpoint: maxConnectionsPerEndpoint,
@@ -534,8 +537,10 @@ module.exports = function (RED) {
 		//######################################################################################
 		node.on("input", function (msg) {
 			verbose_log(JSON.stringify(msg));
-			if (msg.payload.hasOwnProperty("opcuaCommand") && msg.payload.opcuaCommand === "setUsers" && msg.payload.users) {
+			if (msg.payload.hasOwnProperty("opcuaCommand") && msg.payload.opcuaCommand === "setInit" && msg.payload.users) {
 				users = msg.payload.users;
+				host = msg.payload.host
+				port = msg.payload.port
 				console.log(users)
 				verbose_log("NEW USERS: " + JSON.stringify(users));
 				setUsers(users);
