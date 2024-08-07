@@ -534,7 +534,7 @@ module.exports = function (RED) {
 		//######################################################################################
 		node.on("input", function (msg) {
 			verbose_log(JSON.stringify(msg));
-			if (msg.payload.hasOwnProperty("users")) {
+			if (msg.payload.hasOwnProperty("opcuaCommand") && msg.payload.opcuaCommand === "setUsers" && msg.payload.users) {
 				users = msg.payload.users;
 				console.log(users)
 				verbose_log("NEW USERS: " + JSON.stringify(users));
@@ -563,7 +563,7 @@ module.exports = function (RED) {
 						node.server.on("session_activated", (session) => {
 							if (session.userIdentityToken && session.userIdentityToken.userName) {
 								var msg = {};
-								msg.topic = "Username";
+								msg.topic = `session_activated for user - ${session.userIdentityToken.userName}`;
 								msg.payload = session.sessionName.toString(); // session.clientDescription.applicationName.toString();
 								node.send(msg);
 							}
@@ -571,7 +571,7 @@ module.exports = function (RED) {
 						// Client connected
 						node.server.on("create_session", function (session) {
 							var msg = {};
-							msg.topic = "Client-connected";
+							msg.topic = `Client-connected`;
 							msg.payload = session.sessionName.toString(); // session.clientDescription.applicationName.toString();
 							node.send(msg);
 						});
@@ -598,9 +598,13 @@ module.exports = function (RED) {
 						node.error("Disconnect error: ", msg);
 					}
 				})()
+				verbose_log("Server will be started");
+				return true
 			}
-			else {
-				verbose_warn("No users defined in the input msg)");
+			else if (!node.server || !initialized) {
+				verbose_warn("First input must be correct SetUsers function");
+				node_error("Server is not running");
+				return false
 			}
 			if (!node.server || !initialized) {
 				node_error("Server is not running");
