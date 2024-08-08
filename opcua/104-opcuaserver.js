@@ -213,17 +213,26 @@ module.exports = function (RED) {
 			if (methodArgType === "UInt32") {
 				return opcua.DataType.UInt32;
 			}
+			if (methodArgType === "UInt64") {
+				return opcua.DataType.UInt64;
+			}
 			if (methodArgType === "Int16") {
 				return opcua.DataType.Int32;
 			}
 			if (methodArgType === "Int32") {
 				return opcua.DataType.Int32;
 			}
+			if (methodArgType === "Int64") {
+				return opcua.DataType.Int64;
+			}
 			if (methodArgType === "Double") {
 				return opcua.DataType.Double;
 			}
 			if (methodArgType === "Float") {
 				return opcua.DataType.Float;
+			}
+			if (methodArgType === "Boolean") {
+				return opcua.DataType.Boolean;
 			}
 			node.error("Cannot convert given argument: " + methodArgType + " to OPC UA DataType!");
 		}
@@ -1074,11 +1083,17 @@ module.exports = function (RED) {
 							}
 						}
 
+						if (datatype == "Int64") {
+							opcuaDataType = opcua.DataType.Int64;
+						}
 						if (datatype == "Int32") {
 							opcuaDataType = opcua.DataType.Int32;
 						}
 						if (datatype == "Int16") {
 							opcuaDataType = opcua.DataType.Int16;
+						}
+						if (datatype == "UInt64") {
+							opcuaDataType = opcua.DataType.UInt64;
 						}
 						if (datatype == "UInt32") {
 							opcuaDataType = opcua.DataType.UInt32;
