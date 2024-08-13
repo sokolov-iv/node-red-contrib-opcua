@@ -609,6 +609,7 @@ module.exports = function (RED) {
 						msg.error = {};
 						msg.error.message = "Disconnect error: " + err;
 						msg.error.source = this;
+						console.log(`error: ${err}`)
 						node.error("Disconnect error: ", msg);
 					}
 				})()
@@ -726,7 +727,6 @@ module.exports = function (RED) {
 					if (payload.variableValue === "false" || payload.variableValue === false || payload.variableValue === 0) {
 						value = false;
 					}
-					variables[variableId] = value;
 					// update server variable value if needed now variables[variableId]=value used
 
 					var addressSpace = node.server.engine.addressSpace;
@@ -751,7 +751,9 @@ module.exports = function (RED) {
 						variables[variableId] = opcuaBasics.build_new_value_by_datatype(payload.datatype, payload.variableValue);
 						// var newValue = opcuaBasics.build_new_variant(payload.datatype, payload.variableValue);
 						var newValue = opcuaBasics.build_new_dataValue(payload.datatype, payload.variableValue);
-						vnode.setValueFromSource(newValue); // This fixes if variable if not bound eq. bindVariables is not called
+						variablesStatus[variableId] = opcua.StatusCodes.Good
+						variablesTs[variableId] = new Date(Date.now());
+						vnode.setValueFromSource(newValue, variablesStatus[variableId], new Date()); // This fixes if variable if not bound eq. bindVariables is not called
 						if (payload.quality && payload.sourceTimestamp) {
 							// var statusCode = opcua.StatusCodes.BadDeviceFailure;
 							// var statusCode = opcua.StatusCodes.BadDataLost;
@@ -1209,9 +1211,19 @@ module.exports = function (RED) {
 									if (variablesTs[variableId]) {
 										ts = variablesTs[variableId];
 									}
-									var st = opcua.StatusCodes.Good;
+									// var st = opcua.StatusCodes.Good;
+									// let st = opcua.StatusCodes.UncertainLastUsableValue;
+									let st;
 									if (variablesStatus[variableId]) {
-										st = variablesStatus[variableId];
+										if ((new Date() - ts) > 86400000){
+										// if ((new Date(Date.now()) - ts) > 5000){
+											st = opcua.StatusCodes.UncertainLastUsableValue;
+											variablesStatus[variableId] = st
+										}else{
+											st = variablesStatus[variableId];
+										}
+									}else{
+										st = opcua.StatusCodes.BadWaitingForInitialData
 									}
 									let value;
 									if (valueRank >= 2) {
@@ -1261,6 +1273,7 @@ module.exports = function (RED) {
 								*/
 								set: function (variant) {
 									verbose_log("Server set new variable value : " + variables[variableId] + " browseName: " + ns + ":" + browseName + " new:" + stringify(variant));
+									console.log('set new variable')
 									/*
 									// TODO Array partial write need some more studies
 									if (msg.payload.range) {
